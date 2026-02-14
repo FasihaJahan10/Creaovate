@@ -36,7 +36,7 @@ def chat(req: ChatRequest):
 
 @app.post("/api/generate-logo")
 def logo(req: LogoRequest):
-    return {"prompt": ai_service.generate_logo_prompt(req.model_dump())}
+    return {"image": ai_service.generate_logo_image(req.model_dump())}
 
 @app.get("/test-all")
 def test():

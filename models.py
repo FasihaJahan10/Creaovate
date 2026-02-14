@@ -20,3 +20,4 @@ class LogoRequest(BaseModel):
     brand_name: str
     industry: str
     keywords: str
+    color: str = "gold"

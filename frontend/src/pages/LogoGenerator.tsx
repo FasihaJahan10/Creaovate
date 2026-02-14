@@ -7,9 +7,10 @@ const LogoGenerator = () => {
     const [formData, setFormData] = useState({
         brand_name: '',
         industry: '',
-        keywords: ''
+        keywords: '',
+        color: 'gold'
     });
-    const [logoSvg, setLogoSvg] = useState('');
+    const [logoImage, setLogoImage] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -17,16 +18,17 @@ const LogoGenerator = () => {
         e.preventDefault();
         setLoading(true);
         setError('');
-        setLogoSvg('');
+        setLogoImage('');
 
         try {
             const response = await endpoints.generateLogo(formData);
-            // Clean up the SVG code from the response
-            let svgCode = response.data.prompt;
-            svgCode = svgCode.replace(/```xml/g, '').replace(/```svg/g, '').replace(/```/g, '').trim();
-            setLogoSvg(svgCode);
+            if (response.data.image) {
+                setLogoImage(`data:image/png;base64,${response.data.image}`);
+            } else {
+                throw new Error('No image returned from server');
+            }
         } catch (err) {
-            setError('Failed to generate logo. Please try again.');
+            setError('Failed to generate logo. Please check your API key and try again.');
             console.error(err);
         } finally {
             setLoading(false);
@@ -34,19 +36,16 @@ const LogoGenerator = () => {
     };
 
     const copyToClipboard = () => {
-        if (logoSvg) {
-            navigator.clipboard.writeText(logoSvg);
-            // You might want to add a toast here
+        if (logoImage) {
+            setError('Copying image data is not supported. Please use the Download button.');
         }
     };
 
-    const downloadSvg = () => {
-        if (logoSvg) {
-            const blob = new Blob([logoSvg], { type: 'image/svg+xml' });
-            const url = URL.createObjectURL(blob);
+    const downloadImage = () => {
+        if (logoImage) {
             const link = document.createElement('a');
-            link.href = url;
-            link.download = `${formData.brand_name.replace(/\s+/g, '_')}_logo.svg`;
+            link.href = logoImage;
+            link.download = `${formData.brand_name.replace(/\s+/g, '_')}_logo.png`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -58,10 +57,10 @@ const LogoGenerator = () => {
             <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-12">
                     <h1 className="text-4xl font-extrabold text-white sm:text-5xl">
-                        Design Your <span className="text-[var(--color-gold)]">Signature</span>
+                        Design Your <span className="text-[var(--color-gold)]">Logo</span>
                     </h1>
                     <p className="mt-4 text-xl text-gray-400">
-                        Create timeless, minimalist vector logos instantly.
+                        Create high-quality, professional AI logos instantly.
                     </p>
                 </div>
 
@@ -109,6 +108,25 @@ const LogoGenerator = () => {
                                 />
                             </div>
 
+                            <div>
+                                <label className="block text-sm font-medium text-[var(--color-gold)] mb-2">Primary Color</label>
+                                <div className="flex space-x-4 items-center">
+                                    <input
+                                        type="color"
+                                        className="h-12 w-12 bg-transparent border-none cursor-pointer"
+                                        value={formData.color === 'gold' ? '#D4AF37' : formData.color}
+                                        onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                                    />
+                                    <input
+                                        type="text"
+                                        className="flex-1 px-4 py-3 bg-[var(--color-black)] border border-[var(--color-charcoal-light)] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[var(--color-gold)] focus:border-transparent transition-all"
+                                        placeholder="Color name or hex (e.g. Gold, #FF0000)"
+                                        value={formData.color}
+                                        onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
                             <button
                                 type="submit"
                                 disabled={loading}
@@ -142,28 +160,22 @@ const LogoGenerator = () => {
                             </div>
                         )}
 
-                        {logoSvg ? (
+                        {logoImage ? (
                             <div className="w-full flex flex-col items-center space-y-6">
-                                <div className="bg-black p-4 rounded-xl border border-[var(--color-charcoal-light)] shadow-inner w-full flex items-center justify-center aspect-square">
-                                    <div
-                                        className="w-full h-full [&>svg]:w-full [&>svg]:h-full"
-                                        dangerouslySetInnerHTML={{ __html: logoSvg }}
+                                <div className="bg-black p-2 rounded-xl border border-[var(--color-charcoal-light)] shadow-inner w-full flex items-center justify-center aspect-square overflow-hidden">
+                                    <img
+                                        src={logoImage}
+                                        alt="Generated Logo"
+                                        className="w-full h-full object-contain"
                                     />
                                 </div>
                                 <div className="flex space-x-4">
                                     <button
-                                        onClick={copyToClipboard}
-                                        className="flex items-center px-4 py-2 border border-[var(--color-gold)] rounded-lg text-sm font-medium text-[var(--color-gold)] hover:bg-[var(--color-gold)] hover:text-black transition-colors"
+                                        onClick={downloadImage}
+                                        className="flex items-center px-6 py-3 border border-[var(--color-gold)] rounded-lg text-sm font-bold text-[var(--color-black)] bg-[var(--color-gold)] hover:bg-white transition-all duration-300 uppercase tracking-wider"
                                     >
-                                        <Copy className="h-4 w-4 mr-2" />
-                                        Copy SVG
-                                    </button>
-                                    <button
-                                        onClick={downloadSvg}
-                                        className="flex items-center px-4 py-2 border border-[var(--color-gold)] rounded-lg text-sm font-medium text-[var(--color-gold)] hover:bg-[var(--color-gold)] hover:text-black transition-colors"
-                                    >
-                                        <Download className="h-4 w-4 mr-2" />
-                                        Download
+                                        <Download className="h-5 w-5 mr-2" />
+                                        Download PNG
                                     </button>
                                 </div>
                             </div>

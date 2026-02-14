@@ -1,4 +1,6 @@
 import os
+import requests
+import base64
 from groq import Groq
 from dotenv import load_dotenv
 
@@ -62,17 +64,23 @@ def chatbot_reply(message):
 
 
 def generate_logo_prompt(data):
-    # Modified to request SVG code instead of a description
-    prompt = f"""
-    Create a minimal, luxury, and professional SVG logo code for a brand.
-    Brand Name: {data['brand_name']}
-    Industry: {data['industry']}
-    Style: Minimalist, Premium aesthetic, Geometric, Elegant. (Use {data['keywords']} for specific colors/style if provided)
+    # This now just returns a string prompt for the image generator
+    prompt = f"A professional minimalist luxury logo for a brand named '{data['brand_name']}' in the {data['industry']} industry. Style: {data['keywords']}. Primary color: {data.get('color', 'gold')}. Elegant, high-end, vector style, white background, high resolution."
+    return prompt
+
+def generate_logo_image(data):
+    # Step 1: Get a good prompt from Groq (optional, but let's just use a direct prompt for now)
+    prompt = f"Professional minimalist luxury logo design, '{data['brand_name']}', industry: {data['industry']}, style: {data['keywords']}, primary color: {data.get('color', 'gold')}, flat vector art, isolated on white background, premium aesthetic, 4k"
     
-    IMPORTANT: 
-    - Return ONLY the raw <svg> code. 
-    - Do not include markdown backticks (```xml or ```svg).
-    - Do not include explanation.
-    - Ensure the SVG is viewable on a black background (use white or gold stroke/fill).
-    """
-    return ask_ai(prompt)
+    API_URL = "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell"
+    headers = {"Authorization": f"Bearer {os.getenv('HF_API_KEY')}"}
+
+    def query(payload):
+        response = requests.post(API_URL, headers=headers, json=payload)
+        return response.content
+
+    image_bytes = query({"inputs": prompt})
+    
+    # Convert to base64
+    base64_image = base64.b64encode(image_bytes).decode('utf-8')
+    return base64_image
