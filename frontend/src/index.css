@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+@layer base {
+  :root {
+    --color-gold: #D4AF37;
+    --color-gold-light: #F4C430;
+    --color-gold-dark: #AA8C2C;
+    --color-black: #050505;
+    --color-charcoal: #121212;
+    --color-charcoal-light: #1E1E1E;
+  }
+
+  body {
+    @apply bg-[var(--color-black)] text-white font-sans antialiased selection:bg-[var(--color-gold)] selection:text-black;
+  }
+}
+
+@layer utilities {
+  .text-gold {
+    color: var(--color-gold);
+  }
+
+  .bg-gold {
+    background-color: var(--color-gold);
+  }
+
+  .border-gold {
+    border-color: var(--color-gold);
+  }
+
+  .hover\:text-gold:hover {
+    color: var(--color-gold);
+  }
+
+  .hover\:bg-gold:hover {
+    background-color: var(--color-gold);
+  }
+
+  .bg-charcoal {
+    background-color: var(--color-charcoal);
+  }
+
+  .bg-charcoal-light {
+    background-color: var(--color-charcoal-light);
+  }
+}
