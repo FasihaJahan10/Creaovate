@@ -36,9 +36,6 @@ Start the development server:
 npm run dev
 ```
 
-### 3. Access the Website
-Open your browser and visit:
-**http://localhost:5173**
 
 ## Features
 - **Brand Generator**: Create unique brand names.
